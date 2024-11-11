@@ -1,0 +1,418 @@
+## Herbicide Statistics
+## Max Gebhart
+
+# Packages
+{
+library(dplyr)
+library(tidyr)
+library(rstatix)
+library(ggplot2)
+library(ggpubr)
+library(agricolae)
+library(FSA)
+library(psych)
+library(emmeans)
+library(lmerTest)
+}
+
+
+## Aquatic Use Contacts
+# Pseudorosulata Vall
+# Evaluated on 9/16/24 (6 and 12 WAT)
+{
+  # Loading data in and getting intial estimates
+  setwd("H:/Work/Projects/Vallisneria/Dissertation Projects/Herbicides/Eurasian")
+  setwd("E:/Vallisneria/Dissertation Projects/Herbicides/Pseudorosulata")
+  
+  EAUC <- read.csv("EAUC.csv")
+  blank <- data.frame(nrow= 210)
+  
+  EAUC <- cbind.data.frame(EAUC, blank)
+  EAUC$nrow <- paste(EAUC$Treatment, EAUC$Collection, sep = "")
+  EAUC$AA <- as.numeric(EAUC$AA)
+  
+  stats <- EAUC %>%
+    group_by(Treatment) %>%
+    get_summary_stats(AA, BA, DA, type = "mean_sd")
+  
+  stats2 <- EAUC %>%
+    group_by(nrow) %>%
+    get_summary_stats(AA, BA, DA, type = "mean_sd")
+  
+  trials <- EAUC %>%
+    filter(Treatment != "Pre")
+  
+  x <- c("6 WAT/nReference", "12 WAT/nReference", "6 WAT/nDiquat", "12 WAT/nDiquat", "6 WAT/nFlumioxazin", "12 WAT/nFlumioxazin", "6 WAT/nCarfentrazone-ethyl", "12 WAT/nCarfentrazone-ethyl", "6 WAT/nCopper", "12 WAT/nCopper")
+
+  
+  ## Visualize
+  
+  ggboxplot(trials, x = "nrow", y = "AA", color = "Treatment", 
+            order = c("Ref6wat", "Ref12wat", "D6wat", "D12wat", "F6wat", "F12wat", "CE6wat", "CE12wat", "C6wat", "C12wat"),
+            xlab = "Treatment", ylab = "Aboveground Biomass")
+  
+  ggboxplot(trials, x = "nrow", y = "BA", color = "Treatment", 
+            order = c("Ref6wat", "Ref12wat", "D6wat", "D12wat", "F6wat", "F12wat", "CE6wat", "CE12wat", "C6wat", "C12wat"),
+            xlab = "Treatment", ylab = "Belowground Biomass")  
+  
+  ggboxplot(trials, x = "nrow", y = "DA", color = "Treatment", 
+            order = c("Ref6wat", "Ref12wat", "D6wat", "D12wat", "F6wat", "F12wat", "CE6wat", "CE12wat", "C6wat", "C12wat"),
+            xlab = "Treatment", ylab = "Ramet Density")  
+  
+  ## Statistical Testing
+  {
+  wat6 <- trials %>%
+    filter(Collection != "12wat")
+  wat12 <- trials %>% 
+    filter(Collection != "6wat")
+  
+ # Aboveground
+  {
+  above6 <- aov(AA ~ Treatment, data = wat6)
+  above12 <- aov(AA ~ Treatment, data = wat12)
+  summary(above6)
+  summary(above12)
+  
+  lsabove <- HSD.test(above6, "Treatment")
+  lsabove <- HSD.test(above12, "Treatment")
+  
+  lmabove6 <- lsmeans(above6,~Treatment)
+  multcomp::cld(lmabove6, Letters = 'abcdefghi', reversed = TRUE)
+  
+  lmabove12 <- lsmeans(above12,~Treatment)
+  multcomp::cld(lmabove12, Letters = 'abcdefghi', reversed = TRUE)
+  
+  
+  
+  
+  Anorm6 <- shapiro.test(wat6$AA)
+  Bnorm6 <- shapiro.test(wat6$BA)
+  Rnorm6 <- shapiro.test(wat6$DA)
+  
+  Anorm12 <- shapiro.test(wat12$AA)
+  Bnorm12 <- shapiro.test(wat12$BA)
+  Rnorm12 <- shapiro.test(wat12$DA)
+  
+  
+  
+  above6 <- glm(AA ~ Treatment * Trial, data = wat6)
+  anova(above6)
+  
+  test <- HSD.test(above6, "Treatment")
+  postTrt <- lsmeans(above6,~Treatment)
+  multcomp::cld(postTrt, Letters = letters, reversed=T)
+  
+  postTri <- lsmeans(above6,~Trial)
+  multcomp::cld(postTri, Letters = letters ,reversed=T)
+  
+  
+  above12 <- glm(AA~ Treatment * Trial, data = wat12)
+  anova(above12)
+  
+  other <- HSD.test(above12, "Treatment")
+  treat <- lsmeans(above12,~ Treatment)
+  multcomp::cld(treat, Letters= letters, reversed=T)
+  }
+  
+  
+  # Belowground
+  {
+  below6 <- aov(BA ~ Treatment, data = wat6)
+  below12 <- aov(BA ~ Treatment, data = wat12)
+  
+  summary(below6)
+  summary(below12)
+  
+  lsbelow6 <- HSD.test(below6, "Treatment")
+  lsbelow12 <- HSD.test(below12, "Treatment")
+  
+  lmbelow6 <- lsmeans(below6,~Treatment)
+  multcomp::cld(lmbelow6, Letters = 'abcdefghi', reversed = TRUE)
+  
+  lmbelow12 <- lsmeans(below12,~Treatment)
+  multcomp::cld(lmbelow12, Letters = 'abcdefghi', reversed = TRUE)
+  
+  Bnorm6 <- shapiro.test(wat6$BA)
+  
+  below6 <- glm(BA ~ Treatment * Trial, data = wat6)
+  anova(below6)
+  
+  postTreat <- HSD.test(below6, "Treatment")
+  postTrt <- lsmeans(below6,~Treatment)
+  multcomp::cld(postTrt, Letters = letters, reversed=T)
+
+  
+  summary(above6)
+  summary(above12)
+  
+  below12 <- glm(BA~ Treatment * Trial, data = wat12)
+  anova(below12)
+  
+  treater <- HSD.test(below12, "Treatment")
+  treat <- lsmeans(below12,~ Treatment)
+  multcomp::cld(treat, Letters= letters, reversed=T)
+  }
+  
+  
+  # Offshoots
+  {
+  offshoots6 <- aov(DA ~ Treatment, data = wat6)
+  offshoots12 <- aov(DA ~ Treatment, data = wat12)
+  
+  summary(offshoots6)
+  summary(offshoots12)
+  
+  lsoffshoots6 <- LSD.test(offshoots6, "Treatment")
+  lsoffshoots12 <- LSD.test(offshoots12, "Treatment")
+  
+  lmoffshoots6 <- lsmeans(offshoots6,~Treatment)
+  multcomp::cld(lmoffshoots6, Letters = 'abcdefghi', reversed = TRUE)
+  
+  lmoffshoots12 <- lsmeans(offshoots12,~Treatment)
+  multcomp::cld(lmoffshoots12, Letters = 'abcdefghi', reversed = TRUE)
+  
+  
+  
+  
+  
+  
+  
+  ram6 <- glm(DA ~ Treatment * Trial, data = wat6)
+  anova(ram6)
+  
+  post <- HSD.test(ram6, "Treatment")
+  postTrt <- lsmeans(ram6,~Treatment)
+  multcomp::cld(postTrt, Letters = letters, reversed=T)
+  
+  ram12 <- glm(DA~ Treatment * Trial, data = wat12)
+  anova(ram12)
+  
+  other <- HSD.test(ram12, "Treatment")
+  treat <- lsmeans(ram12,~ Treatment)
+  multcomp::cld(treat, Letters= letters, reversed=T)
+  }
+  }
+}
+
+
+## Aquatic Use Systemics
+# Pseudorosulata Vall
+# Evaluated on
+
+
+## Aquatic Use Contacts 
+# Vall Spiralis
+# Evaluated 10/1/24 (6 WAT)
+{
+  # Loading in data and getting initial ideas
+  setwd("E:/Vallisneria/Dissertation Projects/Herbicides/Spiralis")
+  setwd("H:/Work/Projects/Vallisneria/Dissertation Projects/Herbicides/Spiralis")
+  
+  SAUC <- read.csv("SAUC.csv")
+  
+  stats <-  SAUC %>% 
+    group_by(Treatment) %>% 
+    get_summary_stats(AA, BA, DA, type="mean_se")
+  
+  trials <- SAUC %>%
+    filter(Treatment != "Pre")
+  
+  # Visualize
+  
+  ggboxplot(trials, x = "Treatment", y = "AA", fill = "Treatment", 
+            order = c("Ref", "D", "F", "CE", "C"),
+            xlab = "Treatment", ylab = "Aboveground Biomass") +
+    stat_summary(aes(x=Treatment, y= AA), data=trials, fun = mean, geom="point", color="red")
+  
+  ggboxplot(trials, x = "Treatment", y = "BA", fill = "Treatment", 
+            order = c("Ref", "D", "F", "CE", "C"),
+            xlab = "Treatment", ylab = "Belowground Biomass")+
+    stat_summary(aes(x=Treatment, y= BA), data=trials, fun = mean, geom="point", color = "red")
+  
+  ggboxplot(trials, x = "Treatment", y = "DA", fill = "Treatment", 
+            order = c("Ref", "D", "F", "CE", "C"),
+            xlab = "Treatment", ylab = "Ramet Density")+
+    stat_summary(aes(x=Treatment, y= DA), data=trials, fun = mean, geom="point", color="red")
+  
+  # Statistical Testing
+  #Aboveground
+  {
+    Anorm  <- shapiro.test(trials$AA)
+    
+    above <- glm(AA ~ Treatment * Trial, data = trials)
+    anova(above)
+    
+    postTrt <- lsmeans(above,~Treatment)
+    multcomp::cld(postTrt, Letters=letters, reversed=T)
+    postTri <- lsmeans(above,~Trial)
+    multcomp::cld(postTri, Letters = letters ,reversed=T)
+    
+    kruskal.test(AA ~ Treatment, data=trials)
+    kruskal.test(AA ~ Trial, data=trials)
+  }
+  
+  
+  #Belowground 
+  {
+    Bnorm <- shapiro.test(trials$BA)
+    
+    below <- glm(BA ~ Treatment * Trial, data = trials)
+    anova(below)
+    
+    postTrt <- lsmeans(below,~Treatment)
+    multcomp::cld(postTrt, Letters = letters, reversed=T)
+    postTreat <- HSD.test(below)
+    
+    
+    kruskal.test(BA ~ Treatment, data=trials)
+    kruskal.test(BA ~ Trial, data=trials)
+  }
+  
+  
+  # Ramet Density
+  {
+    Dnorm <- shapiro.test(trials$DA)
+    
+    ramets <- glm(DA ~ Treatment * Trial, data = trials)
+    anova(ramets)
+    
+    postTrt <- lsmeans(ramets,~Treatment)
+    multcomp::cld(postTrt, Letters = letters, reversed = T)
+    postTri <- lsmeans(ramets,~Treatment)
+    multcomp::cld(postTri, Letters = letters, reversed = T)
+    
+    kruskal.test(DA ~ Treatment, data=trials)
+    kruskal.test(DA ~ Trial, data=trials)
+  }
+  
+}
+
+## Aquatic Use Systemics
+# Vall Spiralis
+# Evaluated on
+
+
+## 24C Contacts
+# Pseudorosulata Vall
+# Evaluated on 
+{}
+
+## 24C Systemics
+# Pseudorosulata Vall
+# Evaluated on 
+
+
+## 24C Contacts
+# Vall Spiralis
+# Evaluated on 10/17/24 (6 WAT)
+
+{
+  SNAUC <- read.csv("SNAUC.csv")
+  
+  trials <- SNAUC %>%
+    filter(Collection == "6wat")
+  
+  stats <- trials %>%
+    group_by(Treatment) %>%
+    get_summary_stats(AA, BA, DA, type= "full")
+  
+  ggboxplot(trials, x = "Treatment", y = "AA", fill = "Treatment", 
+            order = c("1", "2", "3" , "4", "5"),
+            xlab = "Treatment", ylab = "Aboveground Biomass")+
+    stat_summary(aes(x=Treatment, y= AA), data=trials, fun = mean, geom="point", color="red")
+  
+  ggboxplot(trials, x = "Treatment", y = "BA", fill = "Treatment", 
+            order = c("1", "2", "3" , "4", "5"),
+            xlab = "Treatment", ylab = "Belowground Biomass")+
+    stat_summary(aes(x=Treatment, y= BA), data=trials, fun = mean, geom="point", color="red")
+  
+  ggboxplot(trials, x = "Treatment", y = "DA", fill = "Treatment", 
+            order = c("1", "2", "3" , "4", "5"),
+            xlab = "Treatment", ylab = "Ramet Density")+
+    stat_summary(aes(x=Treatment, y= DA), data=trials, fun = mean, geom="point", color="red")
+  
+  # Statistical Testing
+  #Aboveground
+  {
+    Anorm  <- shapiro.test(trials$AA)
+    
+    above <- glm(AA ~ Treatment * Trial, data = trials)
+    anova(above)
+    
+    postTrt <- lsmeans(above,~Treatment)
+    multcomp::cld(postTrt, Letters=letters, reversed=T)
+    postTri <- lsmeans(above,~Trial)
+    multcomp::cld(postTri, Letters = letters ,reversed=T)
+    
+    kruskal.test(AA ~ Treatment, trials)
+    kruskal.test(AA ~ Trial, trials)
+    
+    # Removing top 10% 
+    {
+      new1 <- trials %>%
+        filter(Treatment == "1")
+      new2 <- trials %>%
+        filter(Treatment == "2")
+      new3 <- trials %>%
+        filter(Treatment == "3")
+      new4 <- trials %>%
+        filter(Treatment == "4")
+      new5 <- trials %>%
+        filter(Treatment == "5")
+      
+      a <- filter(new1, AA <= quantile(new1$AA, .9))
+      b <- filter(new2, AA <= quantile(new2$AA, .9))
+      c <- filter(new3, AA <= quantile(new3$AA, .9))
+      d <- filter(new4, AA <= quantile(new4$AA, .9))
+      e <- filter(new5, AA <= quantile(new5$AA, .9))
+      
+      new <- rbind.data.frame(a,b,c,d,e)
+    }
+  }
+  
+  
+  #Belowground 
+  {
+    Bnorm <- shapiro.test(trials$BA)
+    
+    below <- glm(BA ~ Treatment * Trial, data = trials)
+    anova(below)
+    
+    postTrt <- lsmeans(below,~Treatment)
+    multcomp::cld(postTrt, Letters = letters, reversed=T)
+    postTri <- lsmeans(below,~Trial)
+    multcomp::cld(postTri, Letters = letters ,reversed=T)
+    
+    kruskal.test(BA ~ Treatment, trials)
+    kruskal.test(BA ~ Trial, trials)
+  }
+  
+  
+  # Ramet Density
+  {
+    Dnorm <- shapiro.test(trials$DA)
+    
+    ramets <- glm(DA ~ Treatment * Trial, data = trials)
+    anova(ramets)
+    
+    postTrt <- lsmeans(ramets,~Treatment)
+    multcomp::cld(postTrt, Letters = letters, reversed = T)
+    postTri <- lsmeans(ramets,~Trial)
+    multcomp::cld(postTri, Letters = letters, reversed = T)
+    
+    kruskal.test(DA ~ Treatment, trials)
+    kruskal.test(DA ~ Trial, trials)
+  }
+  
+}
+
+## 24C Systemics
+# Vall Spiralis
+# Evaluated on
+
+
+
+
+
+
+
