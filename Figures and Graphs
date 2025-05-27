@@ -1,1 +1,53 @@
-placeholder
+
+## H-1 Initial Panel Evaluation Graphing 
+
+
+# Packages
+{
+  library(ggplot2)
+  library(dplyr)
+  library(tidyr) 
+  library(rattle)
+  library(tibble)
+  library(agricolae)
+  library(ggthemes)
+  library(ggpubr)
+  library(ggsignif)
+}
+
+### Let's call the dataset that contains the averages, errorbars, and % reductions
+setwd("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel")
+setwd("D:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel")
+
+
+data <- read.csv('Panel Averages.csv')
+
+AUC <- data %>%
+  filter(Grouping == "AUC")
+AAUC <- AUC %>%
+  filter(Tissue == "A" & Species == "Pseudorosulata")
+
+AAUC$TC <- paste(AAUC$Treatment, AAUC$Collection, sep = " ")
+
+### Change the Copper treatments in the TC column due to a small typing error
+
+AAUC[3,9] <- "Copper 6 WAT"
+AAUC[8, 9] <- "Copper 12 WAT"
+
+order <- c("Reference 6 WAT", "Reference 12 WAT", "Carfentrazone 6 WAT", "Carfentrazone 12 WAT", "Copper 6 WAT", "Copper 12 WAT", "Diquat 6 WAT", "Diquat 12 WAT", "Flumioxazin 6 WAT", "Flumioxazin 12 WAT")
+
+
+AqConP <- ggplot(AAUC, ymin = 0) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+  geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+  geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+  theme_pubclean(base_size = 12) +
+  theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+        legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1), 
+        axis.title.y = element_text(vjust = 3)) +
+  scale_y_continuous(limits = c(0, 250)) +
+  geom_text(label = c("A", "a", "B", "c", "B", "ab","B","bc","B", "bc"), x = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),  y = c(246, 207, 90, 42, 48, 138, 80, 85, 106, 63), vjust = -0.5)
+
+AqConP
+
+
+
