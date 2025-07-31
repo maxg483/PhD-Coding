@@ -1,0 +1,41 @@
+## randomforest tutorial
+# https://www.r-bloggers.com/2021/04/random-forest-in-r/
+
+library(randomForest)
+library(datasets)
+library(caret)
+
+# iris data as a tester first
+data <- iris
+
+# separate the data and we can figure out of it's balanced
+# species will be our response variable 
+# the species variables (ex: petal length or sepal width) are the factor variables
+#essentially plant measurements as values to separate species
+data$Species <- as.factor(data$Species)
+table(data$Species)
+
+## First we have to partition out our data for testing and training
+## random forest models are machine learning
+set.seed(222)
+
+# this will attach a number to a vector and this will let us separate our data
+# so the vector will act like a filter function out of dplyr
+ind <- sample(2, nrow(data), replace = T, prob = c(0.7,0.3))
+train <- data[ind==1,]
+test <- data[ind==2,]
+
+# Now this generates the random forest model and we're using all the data in the set
+rf <- randomForest(Species~., data = train, proximity = T)
+print(rf)
+
+# the printing will give us a confusion matrix and everything generated from the function
+## essentially now we can see how our data shook out
+## Our data had an out of bag error of 4.95% with virginica having a classification error of 8%
+
+
+
+
+
+
+
