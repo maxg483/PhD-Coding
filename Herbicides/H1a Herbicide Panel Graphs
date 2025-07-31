@@ -1,0 +1,2088 @@
+## H-1 Initial Panel Evaluation Graphing 
+
+
+# Packages
+{
+  library(ggplot2)
+  library(dplyr)
+  library(tidyr) 
+  library(rattle)
+  library(tibble)
+  library(agricolae)
+  library(ggthemes)
+  library(ggpubr)
+  library(ggsignif)
+  library(ggh4x)
+  library(RColorBrewer)
+  library(patchwork)
+}
+
+### Let's call the dataset that contains the averages, errorbars, and % reductions
+setwd("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel")
+setwd("D:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel")
+
+
+data <- read.csv('Panel Averages.csv')
+
+
+# AUC Pseudorosulata ~
+{
+  AUC <- data %>%
+    filter(Grouping == "AUC" & Species == "Pseudorosulata")
+  
+  order <- c("Reference 6 WAT",
+             "Reference 12 WAT", 
+             "Carfentrazone 6 WAT" ,
+             "Carfentrazone 12 WAT", 
+             "Copper 6 WAT",
+             "Copper 12 WAT", 
+             "Diquat 6 WAT",
+             "Diquat 12 WAT", 
+             "Flumioxazin 6 WAT", 
+             "Flumioxazin 12 WAT")
+  
+  order2 <- c("Reference", "Carfentrazone (0.20 mg ai / L)", "Copper (1.0 mg ai / L)", "Diquat (0.37 mg ai / L)", "Flumioxazin (0.40 mg ai / L)")
+  
+  AUC$TC <- paste(AUC$Treatment, AUC$Collection, sep = " ")
+  
+#Aboveground
+  {
+  AAUC <- AUC %>%
+  filter(Tissue == "A")
+  
+  AAUC$TC <- paste(AAUC$Treatment, AAUC$Collection, sep = " ")
+
+  # Organize data and create the y positions vector
+  {
+  AAUC$TC <- ordered(AAUC$TC, levels = order)
+  AAUC <- AAUC %>% arrange(TC, order)
+  AAUC$Collection <- ordered(AAUC$Collection, levels = c("6 WAT", "12 WAT"))
+  y <- as.vector(AAUC$Average + AAUC$SEM + 2)
+  x <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22)
+  label <- AAUC$LSD.Stats
+  }
+  
+# Create the plot
+AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+  
+  geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+  
+  scale_fill_manual(values = c("lightgray", "white")) +
+  
+  geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+  
+  theme_pubclean(base_size = 18) +
+  
+  theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+        legend.position = c(1,1), legend.justification = c("right", "top"),
+        legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+        axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+        axis.title.y = element_text(vjust = 3)) +
+  
+  scale_y_continuous(limits = c(0, 250), breaks = seq(0,250, by = 25)) + 
+  
+  geom_text(label = label, x = x,  y = y, size = 5, vjust = -0.5) +
+  
+  geom_hline(yintercept = 18.88)
+
+#Check aesthetics and adjust above
+AqConAP
+
+ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqConAP.png", height = 8, width = 10, units = "in", dpi = 2400)
+
+  }
+  
+#Belowground
+  {
+    BAUC <- AUC %>%
+      filter(Tissue == "B")
+    
+    BAUC$TC <- paste(BAUC$Treatment, BAUC$Collection, sep = " ")
+    
+    # Organize the data and create a vector for the y positions for the labels
+    {
+    BAUC$TC <- ordered(BAUC$TC, levels = order)
+    BAUC <- BAUC %>% arrange(TC, order)
+    BAUC$Collection <- ordered(BAUC$Collection, levels = c("6 WAT", "12 WAT"))
+    y <- as.vector(BAUC$Average + BAUC$SEM + 2)
+    x <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22)
+    label <- BAUC$LSD.Stats
+    }
+    
+    # Create the plot 
+    AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+      
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      
+      scale_fill_manual(values = c("lightgray", "white")) +
+      
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      
+      theme_pubclean(base_size = 18) +
+      
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = c(1,1), legend.justification = c("right", "top"),
+            legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+            axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      
+      scale_y_continuous(limits = c(0, 225), breaks = seq(0,250, by = 25)) + 
+      
+      geom_text(label = label, x = x,  y = y, size = 5, vjust = -0.5) +
+      
+      geom_hline(yintercept = 11.75)
+    
+    #Check aesthetics and adjust above
+    AqConBP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqConBP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+
+# Ramet Density
+  {
+    RAUC <- AUC %>%
+      filter(Tissue == "R")
+    
+    RAUC$TC <- paste(RAUC$Treatment, RAUC$Collection, sep = " ")
+    
+    # Organize data and create the y positions vector
+    {
+    RAUC$TC <- ordered(RAUC$TC, levels = order)
+    RAUC <- RAUC %>% arrange(TC, order)
+    RAUC$Collection <- ordered(RAUC$Collection, levels = c("6 WAT", "12 WAT"))
+    y <- as.vector(RAUC$Average + RAUC$SEM + 2)
+    x <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22)
+    label <- RAUC$LSD.Stats
+    }
+    
+    # Create the plot
+    AqConRDP <- ggplot(RAUC, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+      
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      
+      scale_fill_manual(values = c("lightgray", "white")) +
+      
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      
+      theme_pubclean(base_size = 18) +
+      
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = c(1,1), legend.justification = c("right", "top"),
+            legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+            axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      
+      scale_y_continuous(limits = c(0, 1750), breaks = seq(0,1750, by = 250)) + 
+      
+      geom_text(label = label, x = x,  y = y, size = 5, vjust = -0.5) +
+      
+      geom_hline(yintercept = 233.5)
+    
+    #Check aesthetics and adjust above
+    AqConRDP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqConRDP.png",  height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+  ## This is being done with the patchwork package
+  {
+    
+    # First remake the graphs for a few changes
+    ## Legend only in the aboveground biomass graph, place a panel border, and make some scaling changes where necessary
+    # labels and y values for the labels will need to change as well due to the prior naming method i did
+      {
+        labela <- AAUC$LSD.Stats
+        labelb <- BAUC$LSD.Stats
+        labelr <- RAUC$LSD.Stats
+        ya <- as.vector(AAUC$Average + AAUC$SEM)
+        yb <- as.vector(BAUC$Average + BAUC$SEM)
+        yr <- as.vector(RAUC$Average + RAUC$SEM)
+        
+        #########
+        
+        AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+          geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+          geom_hline(yintercept = 18.88)
+        
+        AqConAP
+        
+        #########
+        AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) + 
+          geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 11.75)
+        
+        AqConBP
+        
+        
+        #######
+        AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 233.5)
+        
+        AqConRD
+        
+        
+        ########
+        
+        panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+        panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+        
+        # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+      }
+    
+  }
+  
+}
+
+
+# AUS Pseudorosulata ~
+{
+  AUS <- data %>%
+    filter(Grouping == "AUS" & Species == "Pseudorosulata")
+  
+  AUS$TC <- paste(AUS$Treatment, AUS$Collection, sep = " ")
+  
+  #Vectors for organizing the different runs
+  {order1 <- c("Reference 6 WAT", "Reference 12 WAT","2,4-D 6 WAT", "2,4-D 12 WAT","Endothall 6 WAT", "Endothall 12 WAT")
+    ordera <- c("Reference", "2,4-D (4.00 mg ai / L)", "Endothall (5.00 mg ai / L)")
+    order2 <- c("Reference 6 WAT", "Reference 12 WAT","Bispyribac-sodium 6 WAT", "Bispyribac-sodium 12 WAT")
+    orderb <- c("Reference", "Bispyribac-sodium (0.045 mg ai / L)")
+    order3 <- c("Reference 6 WAT", "Reference 12 WAT","Florpyrauxifen-benzyl 6 WAT", "Florpyrauxifen-benzyl 12 WAT","Fluridone 6 WAT", "Fluridone 12 WAT","Imazamox 6 WAT", "Imazamox 12 WAT","Penoxsulam 6 WAT", "Penoxsulam 12 WAT","Topramezone 6 WAT", "Topramezone 12 WAT","Triclopyr 6 WAT", "Triclopyr 12 WAT")
+    orderc <- c("Reference", "Florpyrauxifen-benzyl (0.048 mg ai / L) ", "Fluridone (0.15 mg ai / L)", "Imazamox (0.50 mg ai / L)", "Penoxsulam (0.15 mg ai / L)", "Topramezone (0.04 mg ai / L)", "Triclopyr (2.50 mg ai / L)")}
+  
+  #Aboveground
+  {
+    # Data separation
+    {    
+      AAUS <- AUS %>%
+      filter(Tissue == "A")
+      
+    AAUS1 <- AAUS %>%
+      filter(Treatment == "Reference" | Treatment == "2,4-D" |  Treatment =="Endothall")
+      
+    AAUS1 <- rbind.data.frame(AAUS1[1:3,], AAUS1[6:8,])
+    
+    AAUS2 <- AAUS %>%
+      filter(Treatment == "Reference" | Treatment == "Bispyribac-sodium")
+    
+    AAUS2 <- rbind.data.frame(AAUS2[2:3,], AAUS2[6:7,])
+    
+    AAUS3 <- AAUS %>%
+      filter(Treatment == "Reference" | Treatment == "Florpyrauxifen-benzyl" | Treatment == "Fluridone" | Treatment == "Imazamox"| Treatment == "Penoxsulam"| Treatment == "Topramezone"| Treatment == "Triclopyr")
+    
+    AAUS3 <- rbind.data.frame(AAUS3[3:9,], AAUS3[12:18,])
+    }
+    
+    
+    # Organize data and create the y positions vector
+    
+      #AAUS 1
+      {        
+        AAUS1$TC <- ordered(AAUS1$TC, levels = order1)
+      AAUS1 <- AAUS1 %>% arrange(TC, order1)
+      AAUS1$Collection <- ordered(AAUS1$Collection, levels = c("6 WAT", "12 WAT"))
+      y1 <- as.vector(AAUS1$Average + AAUS1$SEM)
+      x1 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22)
+      label1 <- AAUS1$LSD.Stats
+      
+      
+      
+      AqSysAP1 <- ggplot(AAUS1) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+        
+        geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        
+        scale_fill_manual(values = c("lightgray", "white")) +
+        
+        geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        
+        theme_pubclean(base_size = 14) +
+        
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+             legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        
+        scale_y_continuous(limits = c(0, 40)) + 
+        
+        geom_text(label = label1, x = x1,  y = y1, size = 5, vjust = -0.5) +
+        
+        geom_hline(yintercept = 12.4)
+      
+      
+      AqSysAP1
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysAP1.png", height = 8, width = 10, units = "in", dpi = 2400)
+      
+      }
+      
+      #AAUS 2
+      {    
+        AAUS2$TC <- ordered(AAUS2$TC, levels = order2)
+        AAUS2 <- AAUS2 %>% arrange(TC, order2)
+        AAUS2$Collection <- ordered(AAUS2$Collection, levels = c("6 WAT", "12 WAT"))
+        y2 <- as.vector(AAUS2$Average + AAUS2$SEM + 2)
+        x2 <- c(0.77, 1.22, 1.77, 2.22)
+        label2 <- AAUS2$LSD.Stats
+        
+        
+        
+        AqSysAP2 <- ggplot(AAUS2) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+          
+          geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          
+          scale_fill_manual(values = c("lightgray", "white")) +
+          
+          geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          
+          theme_pubclean(base_size = 14) +
+          
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+                legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          
+          scale_y_continuous(limits = c(0, 200), breaks = seq(0,200, by = 25)) + 
+          
+          geom_text(label = label2, x = x2,  y = y2, size = 5, vjust = -0.5) + geom_hline(yintercept = 12.4)
+        
+        AqSysAP2
+        
+        ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysAP2.png", height = 8, width = 10, units = "in", dpi = 2400)
+        
+      } 
+      
+      #AAUS 3
+      {
+        AAUS3$TC <- ordered(AAUS3$TC, levels = order3)
+        AAUS3 <- AAUS3 %>% arrange(TC, order3)
+        AAUS3$Collection <- ordered(AAUS3$Collection, levels = c("6 WAT", "12 WAT"))
+        y3 <- as.vector(AAUS3$Average + AAUS3$SEM)
+        x3 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22, 5.77, 6.22, 6.77, 7.22)
+        label3 <- AAUS3$LSD.Stats
+        
+        
+        AqSysAP3 <- ggplot(AAUS3) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+          
+          geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          
+          scale_fill_manual(values = c("lightgray", "white")) +
+          
+          geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          
+          theme_pubclean(base_size = 14) +
+          
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+                legend.position = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          
+          scale_y_continuous(limits = c(0, 20)) + 
+          
+          geom_text(label = label3, x = x3,  y = y3, size = 5, vjust = -0.5) + geom_hline(yintercept = 14.88)
+        
+        AqSysAP3
+        
+        ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysAP3.png", height = 8, width = 10, units = "in", dpi = 2400)
+        
+        }
+    
+  }
+  
+  #Belowground
+  {
+    # Organize the data and create a vector for the y positions for the labels
+    {
+        BAUS <- AUS %>%
+          filter(Tissue == "B")
+        
+        BAUS1 <- BAUS %>%
+          filter(Treatment == "Reference" | Treatment == "2,4-D" |  Treatment =="Endothall")
+        
+        BAUS1 <- rbind.data.frame(BAUS1[1:3,], BAUS1[6:8,])
+        
+        BAUS2 <- BAUS %>%
+          filter(Treatment == "Reference" | Treatment == "Bispyribac-sodium")
+        
+        BAUS2 <- rbind.data.frame(BAUS2[2:3,], BAUS2[6:7,])
+        
+        BAUS3 <- BAUS %>%
+          filter(Treatment == "Reference" | Treatment == "Florpyrauxifen-benzyl" | Treatment == "Fluridone" | Treatment == "Imazamox"| Treatment == "Penoxsulam"| Treatment == "Topramezone"| Treatment == "Triclopyr")
+        
+        BAUS3 <- rbind.data.frame(BAUS3[3:9,], BAUS3[12:18,])
+      }
+      
+    #BAUS 1
+    {       
+          BAUS1$TC <- ordered(BAUS1$TC, levels = order1)
+          BAUS1 <- BAUS1 %>% arrange(TC, order1)
+          BAUS1$Collection <- ordered(BAUS1$Collection, levels = c("6 WAT", "12 WAT"))
+          y1 <- as.vector(BAUS1$Average + BAUS1$SEM)
+          x1 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22)
+          label1 <- BAUS1$LSD.Stats
+          
+          
+          
+          AqSysBP1 <- ggplot(BAUS1) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+            
+            geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+            
+            scale_fill_manual(values = c("lightgray", "white")) +
+            
+            geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+            
+            theme_pubclean(base_size = 14) +
+            
+            theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+                  legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                  legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                  axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+                  axis.title.y = element_text(vjust = 3)) +
+            
+            scale_y_continuous(limits = c(0, 50)) + 
+            
+            geom_text(label = label1, x = x1,  y = y1, size = 5, vjust = -0.5) +
+            
+            geom_hline(yintercept = 12.78)
+          
+          
+          AqSysBP1
+          
+          ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysBP1.png", height = 8, width = 10, units = "in", dpi = 2400)
+          
+        }
+        
+    #BAUS 2
+    {    
+          BAUS2$TC <- ordered(BAUS2$TC, levels = order2)
+          BAUS2 <- BAUS2 %>% arrange(TC, order2)
+          BAUS2$Collection <- ordered(BAUS2$Collection, levels = c("6 WAT", "12 WAT"))
+          y2 <- as.vector(BAUS2$Average + BAUS2$SEM + 2)
+          x2 <- c(0.77, 1.22, 1.77, 2.22)
+          label2 <- BAUS2$LSD.Stats
+          
+          
+          AqSysBP2 <- ggplot(BAUS2) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+            
+            geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+            
+            scale_fill_manual(values = c("lightgray", "white")) +
+            
+            geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+            
+            theme_pubclean(base_size = 14) +
+            
+            theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+                  legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                  legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                  axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+                  axis.title.y = element_text(vjust = 3)) +
+            
+            scale_y_continuous(limits = c(0, 150), breaks = seq(0,150, by = 25)) + 
+            
+            geom_text(label = label2, x = x2,  y = y2, size = 5, vjust = -0.5) + geom_hline(yintercept = 12.78)
+          
+          AqSysBP2
+          
+          ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysBP2.png", height = 8, width = 10, units = "in", dpi = 2400)
+          
+        } 
+        
+    #BAUS 3
+    {
+          BAUS3$TC <- ordered(BAUS3$TC, levels = order3)
+          BAUS3 <- BAUS3 %>% arrange(TC, order3)
+          BAUS3$Collection <- ordered(BAUS3$Collection, levels = c("6 WAT", "12 WAT"))
+          y3 <- as.vector(BAUS3$Average + BAUS3$SEM)
+          x3 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22, 5.77, 6.22, 6.77, 7.22)
+          label3 <- BAUS3$LSD.Stats
+          
+          
+          AqSysBP3 <- ggplot(BAUS3) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+            
+            geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+            
+            scale_fill_manual(values = c("lightgray", "white")) +
+            
+            geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+            
+            theme_pubclean(base_size = 14) +
+            
+            theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+                  legend.position = c(1,1), legend.justification = c("right", "top"),
+                  legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                  axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+                  axis.title.y = element_text(vjust = 3)) +
+            
+            scale_y_continuous(limits = c(0, 15)) + 
+            
+            geom_text(label = label3, x = x3,  y = y3, size = 5, vjust = -0.5) + geom_hline(yintercept = 6.02)
+          
+          AqSysBP3
+          
+          ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysBP3.png", height = 8, width = 10, units = "in", dpi = 2400)
+          
+        }
+  }
+  
+  # Ramet Density
+  {
+    # Organize data and create the y positions vector
+    {
+      RAUS <- AUS %>%
+        filter(Tissue == "R")
+      
+      RAUS1 <- RAUS %>%
+        filter(Treatment == "Reference" | Treatment == "2,4-D" |  Treatment =="Endothall")
+      
+      RAUS1 <- rbind.data.frame(RAUS1[1:3,], RAUS1[6:8,])
+      
+      RAUS2 <- RAUS %>%
+        filter(Treatment == "Reference" | Treatment == "Bispyribac-sodium")
+      
+      RAUS2 <- rbind.data.frame(RAUS2[2:3,], RAUS2[6:7,])
+      
+      RAUS3 <- RAUS %>%
+        filter(Treatment == "Reference" | Treatment == "Florpyrauxifen-benzyl" | Treatment == "Fluridone" | Treatment == "Imazamox"| Treatment == "Penoxsulam"| Treatment == "Topramezone"| Treatment == "Triclopyr")
+      
+      RAUS3 <- rbind.data.frame(RAUS3[3:9,], RAUS3[12:18,])
+      }
+    
+    #RAUS 1
+    {
+      RAUS1$TC <- ordered(RAUS1$TC, levels = order1)
+      RAUS1 <- RAUS1 %>% arrange(TC, order1)
+      RAUS1$Collection <- ordered(RAUS1$Collection, levels = c("6 WAT", "12 WAT"))
+      y1 <- as.vector(RAUS1$Average + RAUS1$SEM)
+      x1 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22)
+      label1 <- RAUS1$LSD.Stats
+      
+      
+      AqSysRD1 <- ggplot(RAUS1) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+        
+        geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        
+        scale_fill_manual(values = c("lightgray", "white")) +
+        
+        geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        
+        theme_pubclean(base_size = 14) +
+        
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        
+        scale_y_continuous(limits = c(0, 1250), breaks = seq(0, 1250, by = 250)) + 
+        
+        geom_text(label = label1, x = x1,  y = y1, size = 5, vjust = -0.5) +
+        
+        geom_hline(yintercept = 456.21)
+      
+      
+      AqSysRD1
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysRD1.png", height = 8, width = 10, units = "in", dpi = 2400)
+    }
+    
+    #RAUS 2
+    {    
+      RAUS2$TC <- ordered(RAUS2$TC, levels = order2)
+      RAUS2 <- RAUS2 %>% arrange(TC, order2)
+      RAUS2$Collection <- ordered(RAUS2$Collection, levels = c("6 WAT", "12 WAT"))
+      y2 <- as.vector(RAUS2$Average + RAUS2$SEM + 2)
+      x2 <- c(0.77, 1.22, 1.77, 2.22)
+      label2 <- RAUS2$LSD.Stats
+      
+      
+      
+      AqSysRD2 <- ggplot(RAUS2) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+        
+        geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        
+        scale_fill_manual(values = c("lightgray", "white")) +
+        
+        geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        
+        theme_pubclean(base_size = 14) +
+        
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        
+        scale_y_continuous(limits = c(0, 3000), breaks = seq(0, 3000, by = 500)) + 
+        
+        geom_text(label = label2, x = x2,  y = y2, size = 5, vjust = -0.5) + geom_hline(yintercept = 456.1)
+      
+      AqSysRD2
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysRD2.png", height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    #RAUS 3
+    {
+      RAUS3$TC <- ordered(RAUS3$TC, levels = order3)
+      RAUS3 <- RAUS3 %>% arrange(TC, order3)
+      RAUS3$Collection <- ordered(RAUS3$Collection, levels = c("6 WAT", "12 WAT"))
+      y3 <- as.vector(RAUS3$Average + RAUS3$SEM + 2)
+      {
+        y3[4] <- y3[4] + 8
+        y3[7] <- y3[7] - 4.8
+        y3[8] <- y3[8] + 5
+        y3[10] <- y3[10] -4
+      }
+      x3 <- c(0.77, 1.22, 1.77, 2.22, 2.77, 3.22, 3.77, 4.22, 4.77, 5.22, 5.77, 6.22, 6.77, 7.22)
+      label3 <- RAUS3$LSD.Stats
+      
+      
+      AqSysRD3 <- ggplot(RAUS3) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+        
+        geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        
+        scale_fill_manual(values = c("lightgray", "white")) +
+        
+        geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        
+        theme_pubclean(base_size = 14) +
+        
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.1, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        
+        scale_y_continuous(limits = c(0, 500), breaks = seq(0,500, by = 50)) + 
+        
+        geom_text(label = label3, x = x3,  y = y3, size = 5, vjust = -0.5) + geom_hline(yintercept = 185)
+      
+      AqSysRD3
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/AqSysRD3.png", height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+  }
+  
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+  ## Each AUS# will have its own panel
+  {
+    
+    # First remake the graphs for a few changes
+    ## Legend only in the aboveground biomass graph, place a panel border, and make some scaling changes where necessary
+    # labels and y values for the labels will need to change as well due to the prior naming method i did
+      #AUS 1
+      {
+        labela <- AAUS1$LSD.Stats
+        labelb <- BAUS1$LSD.Stats
+        labelr <- RAUS1$LSD.Stats
+        ya <- as.vector(AAUS1$Average + AAUS1$SEM)
+        yb <- as.vector(BAUS1$Average + BAUS1$SEM)
+        yr <- as.vector(RAUS1$Average + RAUS1$SEM)
+        
+        #########
+        
+        AqSysAP1 <- ggplot(AAUS1) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 40)) + 
+          geom_text(label = labela, x = x1,  y = ya, size = 5, vjust = -0.5) +
+          geom_hline(yintercept = 12.4)
+        
+        AqSysAP1
+        
+        #########
+        
+        
+        AqSysRD1 <- ggplot(RAUS1) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 1250), breaks = seq(0, 1250, by = 250)) + geom_text(label = labelr, x = x1,  y = yr, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 456.21)
+        
+        AqSysRD1
+        
+        #######
+      
+        AqSysBP1 <- ggplot(BAUS1) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, ordera), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) + 
+          geom_errorbar(aes(x = x1, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 50), breaks = seq(0, 50, by = 10)) + geom_text(label = labelb, x = x1,  y = yb, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 12.78)
+         
+        AqSysBP1
+        
+        ########
+        
+       panel1  <- (AqSysAP1/AqSysBP1/AqSysRD1) + plot_layout(axes = "collect_x")  
+       panel1a    <- panel1 + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+       
+      }
+      
+      #AUS 2
+      {
+        labela <- AAUS2$LSD.Stats
+        labelb <- BAUS2$LSD.Stats
+        labelr <- RAUS2$LSD.Stats
+        ya <- as.vector(AAUS2$Average + AAUS2$SEM)
+        yb <- as.vector(BAUS2$Average + BAUS2$SEM)
+        yr <- as.vector(RAUS2$Average + RAUS2$SEM)
+        
+        #########
+        
+        AqSysAP2 <- ggplot(AAUS2) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 200), breaks = seq(0,200, by =25)) + 
+          geom_text(label = labela, x = x2,  y = ya, size = 5, vjust = -0.5) +
+          geom_hline(yintercept = 12.4)
+        
+        AqSysAP2
+        
+        #########
+        
+        
+        AqSysRD2 <- ggplot(RAUS2) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 2750), breaks = seq(0, 2750, by = 250)) + geom_text(label = labelr, x = x2,  y = yr, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 456.21)
+        
+        AqSysRD2
+        
+        #######
+        
+        AqSysBP2 <- ggplot(BAUS2) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderb), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) + 
+          geom_errorbar(aes(x = x2, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 150), breaks = seq(0, 150, by = 25)) + geom_text(label = labelb, x = x2,  y = yb, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 12.78)
+        
+        AqSysBP2
+        
+        ########
+        
+        panel2  <- (AqSysAP2/AqSysBP2/AqSysRD2) + plot_layout(axes = "collect_x")  
+        panel2a    <- panel2 + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+      }
+      
+      #AUS 3
+      {
+        labela <- AAUS3$LSD.Stats
+        labelb <- BAUS3$LSD.Stats
+        labelr <- RAUS3$LSD.Stats
+        ya <- as.vector(AAUS3$Average + AAUS3$SEM)
+        yb <- as.vector(BAUS3$Average + BAUS3$SEM)
+        yr <- as.vector(RAUS3$Average + RAUS3$SEM)
+        {
+          yr[7] <- yr[7] + 10
+          yr[10] <- yr[10] + 5
+        }
+        
+        
+        #########
+        
+        AqSysAP3 <- ggplot(AAUS3) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+                legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 25)) + 
+          geom_text(label = labela, x = x3,  y = ya, size = 5, vjust = -0.5) +
+          geom_hline(yintercept = 14.88)
+        
+        AqSysAP3
+        
+        #########
+        
+        
+        AqSysRD3 <- ggplot(RAUS3) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) +
+          geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 500), breaks = seq(0, 500, by = 50)) + geom_text(label = labelr, x = x3,  y = yr, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 185)
+        
+        AqSysRD3
+        
+        #######
+        
+        AqSysBP3 <- ggplot(BAUS3) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+          geom_bar(aes(x = factor(TnR, orderc), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+          scale_fill_manual(values = c("lightgray", "white")) + 
+          geom_errorbar(aes(x = x3, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+          theme_pubclean(base_size = 16) +
+          theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+                legend.position = "none", 
+                axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+                axis.title.y = element_text(vjust = 3)) +
+          scale_y_continuous(limits = c(0, 15)) + geom_text(label = labelb, x = x3,  y = yb, size = 5, vjust = -0.5) + 
+          geom_hline(yintercept = 6.02)
+        
+        AqSysBP3
+        
+        ########
+        
+        panel3  <- (AqSysAP3/AqSysBP3/AqSysRD3) + plot_layout(axes = "collect_x")  
+        panel3a    <- panel3 + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+        
+        
+        
+      }
+    
+  }
+  
+}
+
+
+# NAUC Pseudorosulata 
+{
+  NAUC <- data %>%
+    filter(Grouping == "NAUC" & Species == "Pseudorosulata")
+  
+  # Attempt at making a panel of figures for this data (in progress)
+    order <- c("Reference 6 WAT",
+               "Reference 12 WAT", 
+               "Bentazon 6 WAT" ,
+               "Bentazon 12 WAT", 
+               "Flumiclorac 6 WAT",
+               "Flumiclorac 12 WAT", 
+               "Propanil 6 WAT",
+               "Propanil 12 WAT", 
+               "Saflufenacil 6 WAT", 
+               "Saflufenacil 12 WAT")
+    
+    NAUC$TC <- paste(NAUC$Treatment, NAUC$Collection, sep = " ")
+    
+    
+    {
+    AUC$TC <- ordered(AUC$TC, levels = order)
+    AUC <- AUC %>% arrange(TC, order)
+    
+    ggplot(AUC) + geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + labs(x = "", y = "") +
+      scale_fill_manual(values = c("lightgray", "white")) + 
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 14) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1), 
+            axis.title.y = element_text(vjust = 3))+
+      facet_grid(Tissue ~ ., scales = "free_y", switch =, axis.labels = "all_x")
+    
+    
+    
+    
+    
+    labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 14) +
+      
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      
+      scale_y_continuous(limits = c(0, 250)) + 
+      
+      geom_text(label = label, x = c(1:10),  y = y, vjust = -0.5)
+    }
+  
+  #Aboveground
+  {
+    ANAUC <- NAUC %>%
+      filter(Tissue == "A")
+    
+    # Organize data and create the y positions vector
+    {
+      ANAUC$TC <- ordered(ANAUC$TC, levels = order)
+      ANAUC <- ANAUC %>% arrange(TC, order)
+      y <- as.vector(ANAUC$Average + ANAUC$SEM + 2)
+      label <- ANAUC$Stats
+    }
+    
+    # Create the plot
+    NaqConAP <- ggplot(ANAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      
+      geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + 
+      
+      scale_fill_manual(values = c("lightgray", "white")) +
+      
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      
+      theme_pubclean(base_size = 18) +
+      
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      
+      scale_y_continuous(limits = c(0, 85)) + 
+      
+      geom_text(label = label, x = c(1:10),  y = y,size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqConAP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqConAP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  #Belowground
+  {
+    BNAUC <- NAUC %>%
+      filter(Tissue == "B")
+    
+    BNAUC$TC <- paste(BNAUC$Treatment, BNAUC$Collection, sep = " ")
+    
+    # Organize the data and create a vector for the y positions for the labels
+    {
+      BNAUC$TC <- ordered(BNAUC$TC, levels = order)
+      BNAUC <- BNAUC %>% arrange(TC, order)
+      y <- as.vector(BNAUC$Average + BNAUC$SEM + 2)
+      label <- BNAUC$Stats
+    }
+    
+    # Create the plot 
+    NaqConBP <- ggplot(BNAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 125)) +
+      geom_text(label = label, x = c(1:10),  y = y,size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqConBP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqConBP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Ramet Density
+  {
+    RNAUC <- NAUC %>%
+      filter(Tissue == "R")
+    
+    RNAUC$TC <- paste(RNAUC$Treatment, RNAUC$Collection, sep = " ")
+    
+    # Organize data and create the y positions vector
+    {
+      RNAUC$TC <- ordered(RNAUC$TC, levels = order)
+      RNAUC <- RNAUC %>% arrange(TC, order)
+      y <- as.vector(RNAUC$Average + RNAUC$SEM + 2)
+      label <- RNAUC$Stats
+    }
+    
+    # Create the plot
+    NaqConRDP <- ggplot(RNAUC, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 2000)) +
+      geom_text(label = label, x = c(1:10),  y = y, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqConRDP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqConRDP.png",  height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+    
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+    {
+      labela <- AAUC$LSD.Stats
+      labelb <- BAUC$LSD.Stats
+      labelr <- RAUC$LSD.Stats
+      ya <- as.vector(AAUC$Average + AAUC$SEM)
+      yb <- as.vector(BAUC$Average + BAUC$SEM)
+      yr <- as.vector(RAUC$Average + RAUC$SEM)
+      
+      #########
+      
+      AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+        geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+        geom_hline(yintercept = 18.88)
+      
+      AqConAP
+      
+      #########
+      AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) + 
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 11.75)
+      
+      AqConBP
+      
+      
+      #######
+      AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 233.5)
+      
+      AqConRD
+      
+      
+      ########
+      
+      panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+      panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+      
+      # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+    }
+    
+}
+
+
+# NAUS Pseudorosulata
+{
+  NAUS <- data %>%
+    filter(Grouping == "NAUS" & Species == "Pseudorosulata")
+  
+  NAUS$TC <- paste(NAUS$Treatment, NAUS$Collection, sep = " ")
+  
+  order <- c( "Reference 6 WAT","Reference 12 WAT","Aminopyralid 6 WAT","Aminopyralid 12 WAT","Bensulfuron 6 WAT","Bensulfuron 12 WAT","Clomazone 6 WAT","Clomazone 12 WAT","Dichlobenil 6 WAT","Dichlobenil 12 WAT","Halosulfuron 6 WAT","Halosulfuron 12 WAT",
+              "Metsulfuron 6 WAT","Metsulfuron 12 WAT","Rimsulfuron 6 WAT","Rimsulfuron 12 WAT","Sethoxydim 6 WAT","Sethoxydim 12 WAT","Sulfometuron 6 WAT","Sulfometuron 12 WAT","Trifloxysulfuron 6 WAT","Trifloxysulfuron 12 WAT")
+  
+  
+  # Attempt at making a panel of figures for this data (in progress)
+  {  
+        
+    NAUS$TC <- ordered(NAUS$TC, levels = order)
+    NAUS <- NAUS %>% arrange(TC, order)
+    
+    ggplot(AUC) + geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + labs(x = "", y = "") +
+      scale_fill_manual(values = c("lightgray", "white")) + 
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 14) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1), 
+            axis.title.y = element_text(vjust = 3))+
+      facet_grid(Tissue ~ ., scales = "free_y", switch =, axis.labels = "all_x")
+    
+    
+    
+    
+    
+    labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 14) +
+      
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      
+      scale_y_continuous(limits = c(0, 250)) + 
+      
+      geom_text(label = label, x = c(1:10),  y = y, vjust = -0.5)
+    }
+  
+  #Aboveground
+  {
+    ANAUS <- NAUS %>%
+      filter(Tissue == "A")
+    
+    # Organize data and create the y positions vector
+    {
+      ANAUS$TC <- ordered(ANAUS$TC, levels = order)
+      ANAUS <- ANAUS %>% arrange(TC, order)
+      y <- as.vector(ANAUS$Average + ANAUS$SEM)
+      label <- ANAUS$Stats
+    }
+    
+    # Create the plot
+    NaqSysAP <- ggplot(ANAUS) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 50)) + 
+      geom_text(label = label, x = c(1:22),  y = y,size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqSysAP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqSysAP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  #Belowground
+  {
+    BNAUS <- NAUS %>%
+      filter(Tissue == "B")
+    
+    BNAUS$TC <- paste(BNAUS$Treatment, BNAUS$Collection, sep = " ")
+    
+    # Organize the data and create a vector for the y positions for the labels
+    {
+      BNAUS$TC <- ordered(BNAUS$TC, levels = order)
+      BNAUS <- BNAUS %>% arrange(TC, order)
+      y <- as.vector(BNAUS$Average + BNAUS$SEM)
+      label <- BNAUS$Stats
+    }
+    
+    # Create the plot 
+    NaqSysBP <- ggplot(BNAUS) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black", width = 0.85) + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1),
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 50)) +
+      geom_text(label = label, x = c(1:22),  y = y,size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqSysBP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqSysBP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Ramet Density
+  {
+    RNAUS <- NAUS %>%
+      filter(Tissue == "R")
+
+    
+    # Organize data and create the y positions vector
+    {
+      RNAUS$TC <- ordered(RNAUS$TC, levels = order)
+      RNAUS <- RNAUS %>% arrange(TC, order)
+      y <- as.vector(RNAUS$Average + RNAUS$SEM + 2)
+      label <- RNAUS$Stats
+    }
+    
+    # Create the plot
+    NaqSysRDP <- ggplot(RNAUS, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(breaks = seq(0,1200, by = 200) , limits = c(0, 1200)) +
+      geom_text(label = label, x = c(1:22),  y = y, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqSysRDP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Pseudorosulata/Figures/NaqSysRDP.png",  height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+  {
+    labela <- AAUC$LSD.Stats
+    labelb <- BAUC$LSD.Stats
+    labelr <- RAUC$LSD.Stats
+    ya <- as.vector(AAUC$Average + AAUC$SEM)
+    yb <- as.vector(BAUC$Average + BAUC$SEM)
+    yr <- as.vector(RAUC$Average + RAUC$SEM)
+    
+    #########
+    
+    AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+            legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+      geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+      geom_hline(yintercept = 18.88)
+    
+    AqConAP
+    
+    #########
+    AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) + 
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 11.75)
+    
+    AqConBP
+    
+    
+    #######
+    AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 233.5)
+    
+    AqConRD
+    
+    
+    ########
+    
+    panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+    panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+    
+    # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+  }
+  
+}
+ 
+
+--------------------------
+
+
+# AUC Spiralis 
+{
+  AUC <- data %>%
+    filter(Grouping == "AUC" & Species == "Spiralis")
+  
+  order <- c("Reference 6 WAT", "Reference 12 WAT", "Carfentrazone 6 WAT", "Carfentrazone 12 WAT", "Copper 6 WAT", "Copper 12 WAT", "Diquat 6 WAT", "Diquat 12 WAT", "Flumioxazin 6 WAT", "Flumioxazin 12 WAT")
+  
+  #Aboveground
+  {
+    AAUC <- AUC %>%
+      filter(Tissue == "A")
+    
+    AAUC$TC <- paste(AAUC$Treatment, AAUC$Collection, sep = " ")
+    
+    # Organize data and create the y positions vector
+    {
+      AAUC$TC <- ordered(AAUC$TC, levels = order)
+      AAUC <- AAUC %>% arrange(TC, order)
+      y <- as.vector(AAUC$Average + AAUC$SEM + 2)
+      label <- AAUC$Stats
+    }
+    
+    # Create the plot
+    AqConAS <- ggplot(AAUC, ymin = 0) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 115)) +
+      geom_text(label = "p > 0.05", x = 10,  y = 111, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    AqConAS
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConAS.png",height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  #Belowground
+  {
+    BAUC <- AUC %>%
+      filter(Tissue == "B")
+    
+    BAUC$TC <- paste(BAUC$Treatment, BAUC$Collection, sep = " ")
+    
+    # Organize the data and create a vector for the y positions for the labels
+    {
+      BAUC$TC <- ordered(BAUC$TC, levels = order)
+      BAUC <- BAUC %>% arrange(TC, order)
+      y <- as.vector(BAUC$Average + BAUC$SEM + 1)
+      label <- BAUC$Stats
+    }
+    
+    # Create the plot 
+    AqConBS <- ggplot(BAUC, ymin = 0) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 85)) +
+      geom_text(label = label, x = c(1:10),  y = y, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    AqConBS
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConBS.png",height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Ramet Density
+  {
+    RAUC <- AUC %>%
+      filter(Tissue == "R")
+    
+    RAUC$TC <- paste(RAUC$Treatment, RAUC$Collection, sep = " ")
+    
+    # Organize data and create the y positions vector
+    {
+      RAUC$TC <- ordered(RAUC$TC, levels = order)
+      RAUC <- RAUC %>% arrange(TC, order)
+      y <- as.vector(RAUC$Average + RAUC$SEM + 2)
+      label <- RAUC$Stats
+    }
+    
+    # Create the plot
+    AqConRDS <- ggplot(RAUC, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = factor(TC, order), y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(breaks = seq(0, 3000, by = 500), limits = c(0, 3000)) +
+      geom_text(label = "p > 0.05", x = 10,  y = 3000, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    AqConRDS
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConRDS.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+  {
+    labela <- AAUC$LSD.Stats
+    labelb <- BAUC$LSD.Stats
+    labelr <- RAUC$LSD.Stats
+    ya <- as.vector(AAUC$Average + AAUC$SEM)
+    yb <- as.vector(BAUC$Average + BAUC$SEM)
+    yr <- as.vector(RAUC$Average + RAUC$SEM)
+    
+    #########
+    
+    AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+            legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+      geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+      geom_hline(yintercept = 18.88)
+    
+    AqConAP
+    
+    #########
+    AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) + 
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 11.75)
+    
+    AqConBP
+    
+    
+    #######
+    AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 233.5)
+    
+    AqConRD
+    
+    
+    ########
+    
+    panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+    panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+    
+    # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+  }
+
+}
+
+
+# AUS Spiralis 
+{
+    AUC <- data %>%
+      filter(Grouping == "AUC" & Species == "Spiralis")
+    
+    order <- c("Reference 6 WAT", "Reference 12 WAT", "Carfentrazone 6 WAT", "Carfentrazone 12 WAT", "Copper 6 WAT", "Copper 12 WAT", "Diquat 6 WAT", "Diquat 12 WAT", "Flumioxazin 6 WAT", "Flumioxazin 12 WAT")
+    
+    #Aboveground
+    {
+      AAUC <- AUC %>%
+        filter(Tissue == "A")
+      
+      AAUC$TC <- paste(AAUC$Treatment, AAUC$Collection, sep = " ")
+      
+      # Organize data and create the y positions vector
+      {
+        AAUC$TC <- ordered(AAUC$TC, levels = order)
+        AAUC <- AAUC %>% arrange(TC, order)
+        y <- as.vector(AAUC$Average + AAUC$SEM + 2)
+        label <- AAUC$Stats
+      }
+      
+      # Create the plot
+      AqConAS <- ggplot(AAUC, ymin = 0) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 115)) +
+        geom_text(label = "p > 0.05", x = 10,  y = 111, size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      AqConAS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConAS.png",height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    #Belowground
+    {
+      BAUC <- AUC %>%
+        filter(Tissue == "B")
+      
+      BAUC$TC <- paste(BAUC$Treatment, BAUC$Collection, sep = " ")
+      
+      # Organize the data and create a vector for the y positions for the labels
+      {
+        BAUC$TC <- ordered(BAUC$TC, levels = order)
+        BAUC <- BAUC %>% arrange(TC, order)
+        y <- as.vector(BAUC$Average + BAUC$SEM + 1)
+        label <- BAUC$Stats
+      }
+      
+      # Create the plot 
+      AqConBS <- ggplot(BAUC, ymin = 0) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = factor(TC, order), y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 85)) +
+        geom_text(label = label, x = c(1:10),  y = y, size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      AqConBS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConBS.png",height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    # Ramet Density
+    {
+      RAUC <- AUC %>%
+        filter(Tissue == "R")
+      
+      RAUC$TC <- paste(RAUC$Treatment, RAUC$Collection, sep = " ")
+      
+      # Organize data and create the y positions vector
+      {
+        RAUC$TC <- ordered(RAUC$TC, levels = order)
+        RAUC <- RAUC %>% arrange(TC, order)
+        y <- as.vector(RAUC$Average + RAUC$SEM + 2)
+        label <- RAUC$Stats
+      }
+      
+      # Create the plot
+      AqConRDS <- ggplot(RAUC, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = factor(TC, order), y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(breaks = seq(0, 3000, by = 500), limits = c(0, 3000)) +
+        geom_text(label = "p > 0.05", x = 10,  y = 3000, size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      AqConRDS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/AqConRDS.png", height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    # Panel Creation
+    ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+    ## Each AUS# will have its own panel
+    {
+      labela <- AAUC$LSD.Stats
+      labelb <- BAUC$LSD.Stats
+      labelr <- RAUC$LSD.Stats
+      ya <- as.vector(AAUC$Average + AAUC$SEM)
+      yb <- as.vector(BAUC$Average + BAUC$SEM)
+      yr <- as.vector(RAUC$Average + RAUC$SEM)
+      
+      #########
+      
+      AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+        geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+        geom_hline(yintercept = 18.88)
+      
+      AqConAP
+      
+      #########
+      AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) + 
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 11.75)
+      
+      AqConBP
+      
+      
+      #######
+      AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 233.5)
+      
+      AqConRD
+      
+      
+      ########
+      
+      panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+      panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+      
+      # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+    }
+    
+    
+  }
+
+   
+# NAUC Spiralis 
+{
+    NAUC <- data %>%
+      filter(Grouping == "NAUC" & Species == "Spiralis")
+    
+    order <- c("Reference 6 WAT",
+               "Reference 12 WAT", 
+               "Bentazon 6 WAT" ,
+               "Bentazon 12 WAT", 
+               "Flumiclorac 6 WAT",
+               "Flumiclorac 12 WAT", 
+               "Propanil 6 WAT",
+               "Propanil 12 WAT", 
+               "Saflufenacil 6 WAT", 
+               "Saflufenacil 12 WAT")
+    
+    NAUC$TC <- paste(NAUC$Treatment, NAUC$Collection, sep = " ")
+    
+    #Aboveground
+    {
+      ANAUC <- NAUC %>%
+        filter(Tissue == "A")
+      
+      # Organize data and create the y positions vector
+      {
+        ANAUC$TC <- ordered(ANAUC$TC, levels = order)
+        ANAUC <- ANAUC %>% arrange(TC, order)
+        y <- as.vector(ANAUC$Average + ANAUC$SEM + 2)
+        label <- ANAUC$Stats
+        }
+      
+      # Create the plot
+      NaqConAS <- ggplot(ANAUC, ymin = 0) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 100)) +
+        geom_text(label = label, x = c(1:10),  y = y,size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      NaqConAS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqConAS.png",height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    #Belowground
+    {
+      BNAUC <- NAUC %>%
+        filter(Tissue == "B")
+      
+      # Organize the data and create a vector for the y positions for the labels
+      {
+        BNAUC$TC <- ordered(BNAUC$TC, levels = order)
+        BNAUC <- BNAUC %>% arrange(TC, order)
+        y <- as.vector(BNAUC$Average + BNAUC$SEM + 1)
+        label <- BNAUC$Stats
+        }
+      
+      # Create the plot 
+      NaqConBS <- ggplot(BNAUC, ymin = 0) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 82)) +
+        geom_text(label = "p > 0.05", x = 10,  y = 81, size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      NaqConBS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqConBS.png",height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    # Ramet Density
+    {
+      RNAUC <- NAUC %>%
+        filter(Tissue == "R")
+      
+      # Organize data and create the y positions vector
+      {
+        RNAUC$TC <- ordered(RNAUC$TC, levels = order)
+        RNAUC <- RNAUC %>% arrange(TC, order)
+        y <- as.vector(RNAUC$Average + RNAUC$SEM + 2)
+        label <- RNAUC$Stats
+        }
+      
+      # Create the plot
+      NaqConRDS <- ggplot(RNAUC, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+        geom_bar(aes(x = factor(TC, order), y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x=factor(TC, order), ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+        theme_pubclean(base_size = 18) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+              legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(breaks = seq(0, 2500, by = 500), limits = c(0, 2500)) +
+        geom_text(label = label, x = c(1:10),  y = y, size = 5, vjust = -0.5)
+      
+      #Check aesthetics and adjust above
+      NaqConRDS
+      
+      ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqConRDS.png", height = 8, width = 10, units = "in", dpi = 2400)
+      
+    }
+    
+    # Panel Creation
+    ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+    {
+      labela <- AAUC$LSD.Stats
+      labelb <- BAUC$LSD.Stats
+      labelr <- RAUC$LSD.Stats
+      ya <- as.vector(AAUC$Average + AAUC$SEM)
+      yb <- as.vector(BAUC$Average + BAUC$SEM)
+      yr <- as.vector(RAUC$Average + RAUC$SEM)
+      
+      #########
+      
+      AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+              legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+        geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+        geom_hline(yintercept = 18.88)
+      
+      AqConAP
+      
+      #########
+      AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) + 
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 11.75)
+      
+      AqConBP
+      
+      
+      #######
+      AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+        geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+        scale_fill_manual(values = c("lightgray", "white")) +
+        geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+        theme_pubclean(base_size = 16) +
+        theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+              legend.position = "none", 
+              axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+              axis.title.y = element_text(vjust = 3)) +
+        scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+        geom_hline(yintercept = 233.5)
+      
+      AqConRD
+      
+      
+      ########
+      
+      panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+      panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+      
+      # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+    }
+  }
+  
+
+# NAUS Spiralis 
+{
+  NAUS <- data %>%
+    filter(Grouping == "NAUS" & Species == "Spiralis")
+  
+  NAUS$TC <- paste(NAUS$Treatment, NAUS$Collection, sep = " ")
+  
+  order <- c( "Reference 6 WAT","Reference 12 WAT","Aminopyralid 6 WAT","Aminopyralid 12 WAT","Bensulfuron 6 WAT","Bensulfuron 12 WAT","Clomazone 6 WAT","Clomazone 12 WAT","Dichlobenil 6 WAT","Dichlobenil 12 WAT","Halosulfuron 6 WAT","Halosulfuron 12 WAT",
+              "Metsulfuron 6 WAT","Metsulfuron 12 WAT","Rimsulfuron 6 WAT","Rimsulfuron 12 WAT","Sethoxydim 6 WAT","Sethoxydim 12 WAT","Sulfometuron 6 WAT","Sulfometuron 12 WAT","Trifloxysulfuron 6 WAT","Trifloxysulfuron 12 WAT")
+  
+  new <- NAUS$Treatment %>%
+    unique()
+  
+  #Aboveground
+  {
+    ANAUS <- NAUS %>%
+      filter(Tissue == "A")
+    
+    # Organize data and create the y positions vector
+    {
+      ANAUS$Treatment <- ordered(ANAUS$Treatment, levels = new)
+      ANAUS <- ANAUS %>% arrange(Treatment, new)
+      y <- as.vector(ANAUS$Average + ANAUS$SEM)
+      label <- ANAUS$Stats
+      }
+    
+    # Create the plot
+    NaqSysAP <- ggplot(ANAUS) + 
+      labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = Treatment, y= Average, fill= Collection), stat = "identity", color= "black", position = "dodge", width = 0.8) + 
+      scale_fill_manual(values = c("white", "lightgray")) +
+      geom_errorbar(aes(x=Treatment, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75, position = "dodge") +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 50)) + 
+      geom_text(label = label, x = seq(from=0.5, to=21.5, by = 1),  y = y,size = 5, vjust = -0.5)+
+      geom_hline(yintercept = 8.39)
+    
+    
+    
+    #Check aesthetics and adjust above
+    NaqSysAP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqSysAS.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  #Belowground
+  {
+    BNAUS <- NAUS %>%
+      filter(Tissue == "B")
+    
+    BNAUS$TC <- paste(BNAUS$Treatment, BNAUS$Collection, sep = " ")
+    
+    # Organize the data and create a vector for the y positions for the labels
+    {
+      BNAUS$TC <- ordered(BNAUS$TC, levels = order)
+      BNAUS <- BNAUS %>% arrange(TC, order)
+      y <- as.vector(BNAUS$Average + BNAUS$SEM)
+      label <- BNAUS$Stats
+    }
+    
+    # Create the plot 
+    NaqSysBP <- ggplot(BNAUS) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y= Average, fill= Collection), stat = "identity", color= "black", width = 0.85) + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.25, hjust=1.1),
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(breaks = seq(0,175, by = 25),limits = c(0, 175)) +
+      geom_text(label = label, x = c(1:22),  y = y,size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqSysBP
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqSysBP.png", height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Ramet Density
+  {
+    RNAUS <- NAUS %>%
+      filter(Tissue == "R")
+    
+    
+    # Organize data and create the y positions vector
+    {
+      RNAUS$TC <- ordered(RNAUS$TC, levels = order)
+      RNAUS <- RNAUS %>% arrange(TC, order)
+      y <- as.vector(RNAUS$Average + RNAUS$SEM + 2)
+      label <- RNAUS$Stats
+      }
+    
+    # Create the plot
+    NaqSysRDS <- ggplot(RNAUS, ymin = 0) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) + 
+      geom_bar(aes(x = TC, y = Average, fill= Collection), stat = "identity", color= "black") + scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x=TC, ymin = Average - SEM, ymax= Average + SEM), width = 0.15, color = "black", alpha=0.9, linewidth=0.75) +
+      theme_pubclean(base_size = 18) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), 
+            legend.position = "none", axis.text.x = element_text(angle = 45, face = "bold", vjust = 1.15, hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(breaks = seq(0,2250, by = 250) , limits = c(0, 2250)) +
+      geom_text(label = label, x = c(1:22),  y = y, size = 5, vjust = -0.5)
+    
+    #Check aesthetics and adjust above
+    NaqSysRDS
+    
+    ggsave("E:/Vallisneria/Dissertation Projects/4. Herbicides/H1 - Initial Panel/Spiralis/Figures/NaqSysRDS.png",  height = 8, width = 10, units = "in", dpi = 2400)
+    
+  }
+  
+  # Panel Creation
+  ## I am aiming for a vertical panel since the herbicides will stay the same but the y-axis will change
+  {
+    labela <- AAUC$LSD.Stats
+    labelb <- BAUC$LSD.Stats
+    labelr <- RAUC$LSD.Stats
+    ya <- as.vector(AAUC$Average + AAUC$SEM)
+    yb <- as.vector(BAUC$Average + BAUC$SEM)
+    yr <- as.vector(RAUC$Average + RAUC$SEM)
+    
+    #########
+    
+    AqConAP <- ggplot(AAUC) + labs(x = "", y = expression(paste("Aboveground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") +
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "inside", legend.position.inside = c(1,1), legend.justification = c("right", "top"),
+            legend.background = element_rect(color = "black"), legend.direction = "vertical", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 300), breaks = seq(0,300, by = 50)) + 
+      geom_text(label = labela, x = x,  y = ya, size = 5, vjust = -0.5) +
+      geom_hline(yintercept = 18.88)
+    
+    AqConAP
+    
+    #########
+    AqConBP <- ggplot(BAUC) + labs(x = "", y = expression(paste("Belowground Biomass (g DW/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) + 
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill=NA),
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, by = 50)) + geom_text(label = labelb, x = x,  y = yb, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 11.75)
+    
+    AqConBP
+    
+    
+    #######
+    AqConRD <- ggplot(RAUC) + labs(x = "", y = expression(paste("Ramet Density (#/ ", m^{2}, ")"))) +
+      geom_bar(aes(x = factor(TnR, order2), y= Average, fill= Collection), position = position_dodge(), stat = "identity",  color= "black") + 
+      scale_fill_manual(values = c("lightgray", "white")) +
+      geom_errorbar(aes(x = x, ymin = Average-SEM, ymax= Average+SEM), position = position_dodge(0.5), width = 0.2, color = "black") +
+      theme_pubclean(base_size = 16) +
+      theme(axis.ticks.x = element_blank(), panel.grid.major = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), panel.border = element_rect(fill = NA), 
+            legend.position = "none", 
+            axis.text.x = element_text(angle = 45, face = "bold", hjust=1), 
+            axis.title.y = element_text(vjust = 3)) +
+      scale_y_continuous(limits = c(0, 2000), breaks = seq(0, 2000, by = 250)) + geom_text(label = labelr, x = x,  y = yr, size = 5, vjust = -0.5) + 
+      geom_hline(yintercept = 233.5)
+    
+    AqConRD
+    
+    
+    ########
+    
+    panel  <- (AqConAP/AqConBP/AqConRD) + plot_layout(axes = "collect_x")  
+    panel1  <- panel + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 24, face = 'bold'))
+    
+    # Use the plot window to size out the figure and save it using the menu at the top since the ggsave function will compress the image 
+  }
+}
+
+
+
+
+
+
+
