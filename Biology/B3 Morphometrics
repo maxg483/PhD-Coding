@@ -1,1 +1,197 @@
-placeholder
+## Morphometric analysis
+## Maxwell Gebhart 
+
+### Unsure what the methods will largely be since I have mostly multivariate analyses but unsure which i'll go with
+### more than likely it'll be a combination of a few
+
+# Packages
+{
+  library(MASS)
+  library(tidyverse)
+  library(caret)
+  library(vegan)
+  library(factoextra)
+  library(gridExtra)
+  library(ggplot2)
+  library(glue)
+  library(tidyr)
+  library(dplyr)
+  library(effectsize)
+  library(rstatix)
+  library(mvnormalTest)
+  library(heplots)
+  library(klaR)
+  library(psych)
+  library(devtools)
+  library(ggord)
+  library(agricolae)
+  library(FSA)
+  library(psych)
+  library(emmeans)
+  library(lmerTest)
+  library(jtools)
+  library(lme4)
+  library(multcomp)
+  library(rcompanion)
+  library(mosaic)
+}
+
+## Tutorial
+{
+ # https://www.r-bloggers.com/2021/05/linear-discriminant-analysis-in-r/
+data("iris")
+str(iris)
+
+# scatter diagrams, histograms, and pearson correlations
+pairs.panels(iris[1:4], gap=0,bg = c("red","green","blue")[iris$Species],pch=21)
+
+# Training and test datasets
+set.seed(123)
+ind <- sample(2, nrow(iris),
+              replace = TRUE,
+              prob = c(0.6, 0.4))
+training <- iris[ind==1,]
+testing <- iris[ind==2,]
+
+# Runs the actual analysis and calls the results
+linear <- lda(Species~., training)
+linear
+
+## Plots the analysis on a biplot
+ggord(linear, training$Species, ylim = c(-10, 10))
+
+
+# These can be done on a pca analysis as well 
+principal <- prcomp(iris[,1:4], scale. = T)
+principal
+
+ggord(principal, iris$Species, ylim = c(-5,5), xlim = c(-5,5))
+
+# Partition plots that can help classify every combination in the training set
+partimat(Species~., data = training, method = "lda")
+
+# This creates a confusion matrix and accuracy data for TRAINING DATA
+p1 <- predict(linear, training)$class
+tab <- table(Predicted = p1, Actual = training$Species)
+tab
+
+#This is a confusion matrix of the TEST DATA
+p2 <- predict(linear, testing)$class
+tab1 <- table(Predicted = p2, Actual = testing$Species)
+tab1
+
+sum(diag(tab1))/sum(tab1)
+
+}
+
+morpho <- read.csv("Morph test.csv")
+
+a <- morpho[1:450, 1:9]
+
+
+
+
+# This will have the shapiro test and the anova tests to check monthly differences
+# One big thing is you'll need to omit all of the NA's which will reduce the dataset
+# This will lead to an unbalanced design since not every month will have the same amount of datapoints
+# So there may need to be some level of reading into how to test this effectively
+## This shouldn't impact the LDA but it will more than likely impact a MANOVA procdedure
+
+{
+  a1 <- na.omit(a[,c("Month", "T.S", "Leaf","LW")])
+  b <- na.omit(a[,c("Month", "T.S", "Leaf","LBW")]) 
+  c <- na.omit(a[,c("Month", "T.S", "Leaf","TA")])
+  d <- na.omit(a[,c("Month", "T.S", "Leaf","SD")])
+  e <- na.omit(a[,c("Month", "T.S", "Leaf", "LBW.LW")])
+  
+  
+  
+  shapiro.test(a1$LW)
+  shapiro.test(b$LBW)
+  shapiro.test(c$TA)
+  shapiro.test(d$SD)
+  
+  
+  
+test <- anova_test(LW ~ Month, a1)
+anova(test)
+
+post <- lsmeans(test,~Month)
+multcomp::cld(post, Letters = letters, reversed=T)
+
+test <- lm(LBW ~ Month, b)
+anova(test)
+
+post <- lsmeans(test,~Month)
+multcomp::cld(post, Letters = letters, reversed=T)
+
+test <- lm(TA ~ Month, c)
+anova(test)
+
+post <- lsmeans(test,~Month)
+multcomp::cld(post, Letters = letters, reversed=T)
+
+test <- lm(SD ~ Month, d)
+anova(test)
+
+post <- lsmeans(test,~Month)
+multcomp::cld(post, Letters = letters, reversed=T)
+
+test <- lm(LBW.LW ~ Month, e)
+anova(test)
+
+post <- lsmeans(test,~Month)
+multcomp::cld(post, Letters = letters, reversed=T)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
